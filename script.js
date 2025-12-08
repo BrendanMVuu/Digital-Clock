@@ -11,10 +11,25 @@ function updateClock() {
 }
 
 function calculateMinutesUntil(targetTime) {
-    // Parse target time (format: "HH:MM AM/PM" or "HH:MM")
-    const timeParts = targetTime.trim().split(" ");
-    const [targetHours, targetMinutes] = timeParts[0].split(":").map(Number);
-    const targetMeridiem = timeParts[1]?.toUpperCase() || "AM";
+    // Parse target time (format: "HH:MM AM/PM")
+    const timeRegex = /^(\d{1,2}):(\d{2})\s*(AM|PM)$/i;
+    const match = targetTime.trim().match(timeRegex);
+    
+    if (!match) {
+        throw new Error("Invalid format! Use format like '2:30 AM' or '8:20 PM'");
+    }
+    
+    const targetHours = parseInt(match[1]);
+    const targetMinutes = parseInt(match[2]);
+    const targetMeridiem = match[3].toUpperCase();
+    
+    // Validate hours and minutes
+    if (targetHours < 1 || targetHours > 12) {
+        throw new Error("Hours must be between 1 and 12");
+    }
+    if (targetMinutes < 0 || targetMinutes > 59) {
+        throw new Error("Minutes must be between 0 and 59");
+    }
     
     // Get current time
     const now = new Date();
@@ -75,7 +90,12 @@ function handleCountdownClick() {
         document.getElementById("countdown").textContent = "Please enter a time!";
         return;
     }
-    displayCountdown(targetTime);
+    
+    try {
+        displayCountdown(targetTime);
+    } catch (error) {
+        document.getElementById("countdown").textContent = error.message;
+    }
 }
 
 // Initialize the countdown input
